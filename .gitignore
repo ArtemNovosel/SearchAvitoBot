@@ -1,3 +1,4 @@
-config.py
+/config.py
 conftest.py
 /users_data/
+/avito_pages.py

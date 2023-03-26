@@ -1,5 +1,4 @@
-/config.py
-conftest.py
+#папка с данными ссылок юзеров
 /users_data/
-/avito_pages.py
+#файл с токеном для работы бота
 /*.txt

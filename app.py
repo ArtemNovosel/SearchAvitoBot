@@ -2,15 +2,15 @@ import os  # для работы с консолью
 from time import sleep  # только в одном месте))
 import telebot  # для работы бота
 
+# импорт токена
+with open('token.txt', 'r', encoding='utf8') as f:
+    TOKEN = f.read()
 bot = telebot.TeleBot(TOKEN)
 
 
 # Обрабатываются все сообщения, содержащие команды '/start' or '/help'.
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message: telebot.types.Message):
-    # записываем все сообщения в файл
-    with open("message.txt", 'a', encoding="utf8") as f:
-        f.write(f'{message.text}  *{message.chat.id}* {message.chat.first_name} \n ')
     if message.text == "/help":
         bot.reply_to(message,
                      f"👋🏽 {message.chat.first_name}! \nЭтот бот может отслеживать 👀 свежие объявления на сайте AVITO за тебя 👍🏻 и скидывать их тебе в чат. \n\nПришли мне ссылку 👩🏼‍💻 на сайт АВИТО начинающуюся на 'https://www.avito.ru/...... ' С НАСТРОЕНЫМИ ПАРАМЕТРАМИ ПОИСКА НА САЙТЕ🔗 \n‼️ОБЯЗАТЕЛЬНО УКАЖИ СОРТИРОВКУ - ПО ДАТЕ‼️ категирия товара, цена, город, и тд, чем более конкретны будут настроены параметры на сайте авито, тем точнее будет поиск🔍")
@@ -24,7 +24,7 @@ def handle_start_help(message: telebot.types.Message):
 def handle_start_help(message: telebot.types.Message):
     # если можеи открыть юзер_лист, то посылаем содержимое
     try:
-        with open(f'{message.chat.first_name}_list.txt', 'r', encoding='utf8') as f:
+        with open(f'users_data\\{message.chat.first_name}_list.txt', 'r', encoding='utf8') as f:
             link = f.read()
         bot.send_message(message.chat.id, link)
     except:
@@ -37,16 +37,14 @@ def repitter(message: telebot.types.Message):
     # если в ссылке нет '.avito.ru/' то включаем попугая
     if ".avito.ru/" not in message.text:
         bot.send_message(message.chat.id, message.text)
-        with open("message.txt", 'a', encoding="utf8") as f:
-            f.write(f'{message.text}  *{message.chat.id}* {message.chat.first_name} \n ')
     else:  # если в сообщении есть .avito.ru/
         # записываем в юзер_лист сообщение
-        with open(f'{message.chat.first_name}_list.txt', 'w', encoding="utf8") as f:
+        with open(f'users_data\\{message.chat.first_name}_list.txt', 'w', encoding="utf8") as f:
             f.write(f'{message.text}')
         # запускаем поиск объявлений
         os.system("python -m pytest -v C:\Skillproject\PageObjectProject\\tests.py")
         # читаем файл со ссылками на новые объявления
-        with open(f'{message.chat.first_name}_links.txt', 'r', encoding="utf8") as file:
+        with open(f'users_data\\{message.chat.first_name}_links.txt', 'r', encoding="utf8") as file:
             data = file.read()
         # если в файле есть ссылки
         if len(data) > 10:
@@ -56,8 +54,8 @@ def repitter(message: telebot.types.Message):
         # если в файле нет ссылок, то удаляем записанный юзер_лист и юзер_линкс
         else:
             bot.send_message(message.chat.id, "Не могу найти объявлениЙ🕵🏻‍♂")
-            os.remove(f'{message.chat.first_name}_links.txt')
-            os.remove(f'{message.chat.first_name}_list.txt')
+            os.remove(f'users_data\\{message.chat.first_name}_links.txt')
+            os.remove(f'users_data\\{message.chat.first_name}_list.txt')
 
 
 # Обрабатываются все документы и аудиозаписи
@@ -70,14 +68,17 @@ def handle_docs_audio(message):
 # обрабатываются голосовые сообщения
 @bot.message_handler(content_types=['voice'])
 def repitter(message: telebot.types.Message):
-    # записываем юзер_найм в файл для последующей работы с ним
+    # записываем имя юзера (запустившего поиск) в файл для последующей работы с ним
     with open("user_name.txt", "w", encoding='utf8') as f:
         f.write(message.chat.first_name)
+    # подготавливаем файл с общим дампом ссылок юзера
+    with open(f'users_data\\{message.chat.first_name}_dump.txt', 'w', encoding='utf8') as file:
+        file.write('*')
     # запускаем файл поиска объявлений на сайте
     os.system("python -m pytest -v C:\Skillproject\PageObjectProject\\tests.py")
     bot.send_message(message.chat.id, 'Проверка прошла!')
     # читаем файл с найденными новыми ссылками
-    with open(f'{message.chat.first_name}_links.txt', "r", encoding="utf8") as f:
+    with open(f'users_data\\{message.chat.first_name}_links.txt', "r", encoding="utf8") as f:
         data = f.read()
         # отправляем данные из файла юзеру
         d = data.split("\n")

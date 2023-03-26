@@ -12,9 +12,9 @@ class SearchLocators:
     LOCATOR_AVITO_LINKS = (By.XPATH, '//*[@class="iva-item-titleStep-pdebR"]/a')  # все ссылки на объявления на странице
 
 
-#класс поиска элементов
+# класс поиска элементов
 class SearchHelper(BasePage):
-    def search_avito_all(self):
+    def search_all(self):
         # читаем имя юзера запустившего поиск
         with open('user_name.txt', "r", encoding='utf8') as f:
             user_name = f.read()

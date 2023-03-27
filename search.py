@@ -12,5 +12,5 @@ def test_search(browser):
     with open(f'users_data\\{user_name}_list.txt', 'r', encoding='utf8') as file:
         url = file.read()
     avito_main_page = SearchHelper(browser)  # запускаем браузер
-    avito_main_page.otkrivaem_site(url) #открываем url
+    avito_main_page.otkrivaem_site(url)  # открываем url
     avito_main_page.search_all()  # запускаем сортировку ссылок на странице

@@ -1,11 +1,14 @@
-import os  # для работы с консолью
 from time import sleep  # только в одном месте))
 import telebot  # для работы бота
+
+from working_with_files import *  # работа с файлами
 
 # импорт токена
 with open('token.txt', 'r', encoding='utf8') as f:
     TOKEN = f.read()
 bot = telebot.TeleBot(TOKEN)
+
+bot.send_message(chat_id="404173737", text='Запуск бота')
 
 
 # Обрабатываются все сообщения, содержащие команды '/start' or '/help'.
@@ -28,7 +31,14 @@ def handle_start_help(message: telebot.types.Message):
             link = f.read()
         bot.send_message(message.chat.id, link)
     except:
-        bot.reply_to(message, 'У вас нет сохраненных ссылок')
+        bot.reply_to(message, 'У вас нет сохраненной ссылки')
+
+
+# удаляем данные юзера по запросу /delete
+@bot.message_handler(commands=['delete'])
+def handle_start_help(message: telebot.types.Message):
+    delete_user_files(message.chat.first_name)
+    bot.reply_to(message, "я удалил все ссылки🔥")
 
 
 # Сохраняем ссылку на поиск если она содержит .avito.ru/ иначе просто реплейсим сообщение
@@ -38,70 +48,68 @@ def repitter(message: telebot.types.Message):
     if ".avito.ru/" not in message.text:
         bot.send_message(message.chat.id, message.text)
     else:  # если в сообщении есть .avito.ru/
-        # записываем имя юзера (запустившего поиск) в файл для последующей работы с ним
-        with open("user_name.txt", "w", encoding='utf8') as f:
-            f.write(message.chat.first_name)
+        bot.send_message(message.chat.id, 'Дай мне немного времени⏳')
         # записываем в юзер_лист сообщение
         with open(f'users_data\\{message.chat.first_name}_list.txt', 'w', encoding="utf8") as f:
             f.write(f'{message.text}')
-        # подготавливаем файл с общим дампом ссылок юзера
-        with open(f'users_data\\{message.chat.first_name}_dump.txt', 'a', encoding='utf8') as file:
-            file.write('*')
+            # создаем файлы юзера для последующей работы с ними
+        write_files_users(message.chat.first_name)
         # запускаем поиск объявлений
-        os.system("python -m pytest -v C:\Skillproject\SearchAvitoBot\\search.py")
-        # читаем файл со ссылками на новые объявления
+        poisk()
+        # проверяем файл со ссылками на новые объявления
         try:
             with open(f'users_data\\{message.chat.first_name}_links.txt', 'r', encoding="utf8") as file:
                 data = file.read()
             # если в файле есть ссылки
             if len(data) > 10:
-                bot.send_message(message.chat.id, "Записал📝 \nЯ буду отслеживать новые объявления ТОЛЬКО ПО ЭТОЙ ссылке👀")
                 bot.send_message(message.chat.id,
-                             "🔊Что бы я проверил новые объявления, \nпришли мне звуковое сообщение 🗣 вежливо попросив об этом")
+                                 "Записал📝 \nЯ буду отслеживать новые объявления ТОЛЬКО ПО ЭТОЙ ссылке👀")
+                bot.send_message(message.chat.id,
+                                 "🔊Что бы я проверил новые объявления, \nпришли мне звуковое сообщение 🗣 вежливо попросив об этом")
             # если в файле нет ссылок, то удаляем записанный юзер_лист и юзер_линкс
             else:
                 bot.send_message(message.chat.id, "Не могу найти объявлениЙ🕵🏻‍♂")
-                os.remove(f'users_data\\{message.chat.first_name}_links.txt')
-                os.remove(f'users_data\\{message.chat.first_name}_list.txt')
-                os.remove(f'users_data\\{message.chat.first_name}_dump.txt')
-        except: #если файла нет
+                delete_user_files(name=message.chat.first_name)
+        except:  # если файла нет
             bot.send_message(message.chat.id, "Не могу найти объявлениЙ🕵🏻‍♂")
-
 
 
 # Обрабатываются все документы и аудиозаписи
 @bot.message_handler(content_types=['photo', 'document', 'audio'])
 def handle_docs_audio(message):
-    bot.reply_to(message, f'Nice meme XDD')
+    bot.reply_to(message, f'Nice 🤩')
 
 
 # Запускаем выполнение поиска новых сообщений с помощью голосовой команды
 # обрабатываются голосовые сообщения
 @bot.message_handler(content_types=['voice'])
 def repitter(message: telebot.types.Message):
-    # записываем имя юзера (запустившего поиск) в файл для последующей работы с ним
+    # записываем юзер_найм в файл для последующей работы с ним
     with open("user_name.txt", "w", encoding='utf8') as f:
         f.write(message.chat.first_name)
-    # подготавливаем файл с общим дампом ссылок юзера
-    with open(f'users_data\\{message.chat.first_name}_dump.txt', 'a', encoding='utf8') as file:
-        file.write('*')
-    try: #проверяем наличие файла юзера со ссылкой на поиск
-        with open(f'{message.chat.first_name}_list.txt', 'r', encoding='utf8') as f:
+    try:
+        with open(f'users_data\\{message.chat.first_name}_list.txt', 'r', encoding='utf8') as f:
             f.read()
+        bot.send_message(message.chat.id, 'Дай мне немного времени⏳')
         # запускаем файл поиска объявлений на сайте
-        os.system("python -m pytest -v C:\Skillproject\PageObjectProject\\tests.py")
+        poisk()
         bot.send_message(message.chat.id, 'Проверка прошла!')
         # читаем файл с найденными новыми ссылками
-        with open(f'{message.chat.first_name}_links.txt', "r", encoding="utf8") as f:
+        with open(f'users_data\\{message.chat.first_name}_links.txt', "r", encoding="utf8") as f:
             data = f.read()
-            # отправляем данные из файла юзеру
-            d = data.split("\n")
-            for i in d[:-1]:
-                sleep(2)
-                print(i)
-                bot.send_message(message.chat.id, text=i)
+            if len(data) > 30:
+                # отправляем данные из файла юзеру
+                d = data.split("\n")
+                for i in d[:-1]:
+                    sleep(2)
+                    print(i)
+                    bot.send_message(message.chat.id, text=i)
+                bot.send_message(message.chat.id, 'Это всё👐')
+            else:
+                bot.send_message(message.chat.id, 'Не нашел 👁новых👁 объявлений')
+
     except:
-        bot.reply_to(message, "Нету ссылки для поиска")
+        bot.reply_to(message, "🌐Нету ссылки для поиска🤔")
 
 
 bot.polling(none_stop=True)

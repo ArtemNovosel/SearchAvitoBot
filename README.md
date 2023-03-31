@@ -19,7 +19,6 @@ working_with_files.py - работа с файлами
 Видео
 
 https://user-images.githubusercontent.com/122513124/229030276-352faaed-f115-4d78-9aee-149c04dd6053.mp4
-
 https://user-images.githubusercontent.com/122513124/229030526-74181914-379a-42bf-a02d-f39dbbcd5a43.mp4
 
 ![Screenshot_27](https://user-images.githubusercontent.com/122513124/227905154-88e99d3d-c9d4-49ef-9e5e-3828dc98a9bf.jpg)

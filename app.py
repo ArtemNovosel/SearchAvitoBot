@@ -8,7 +8,7 @@ with open('token.txt', 'r', encoding='utf8') as f:
     TOKEN = f.read()
 bot = telebot.TeleBot(TOKEN)
 
-bot.send_message(chat_id="404173737", text='Запуск бота')
+#bot.send_message(chat_id="404173737", text='Запуск бота')
 
 
 # Обрабатываются все сообщения, содержащие команды '/start' or '/help'.
